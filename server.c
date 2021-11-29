@@ -26,8 +26,6 @@ void *communicateWithClient(void *data)
         char buff[BUFF_SIZE+5];
         char buff_rcv[BUFF_SIZE];
         char buff_snd[BUFF_SIZE];
-
-        
         /*
         struct myinfo info;
         while(1){
@@ -52,26 +50,33 @@ void *waitUserInput()
 {
         char input_text[BUFF_SIZE];
         char *temp_text;
-        int target_client = -1;
+        int target_client_index = -1;
 
-        while(1){
+        while(1)
+        {
                 printf("입력: ");
                 fgets(input_text, BUFF_SIZE, stdin);
                 printf("%s\n", input_text);
                 temp_text = strtok(input_text, " ");
                 if(temp_text == NULL)
                 {
-                    printf("[s]WARNING: Invalid input!\n");
-                    continue;
+                        printf("[s]WARNING: Invalid input!\n");
+                        continue;
                 }
-                target_client = temp_text[0] - '0';
+                target_client_index = temp_text[0] - '0';
+                if(target_client_index < 1)
+                {
+                        printf("[s]WARNING: Client index starts from 1, not 0.\n");
+                        continue;
+                }
                 temp_text = strtok(NULL, " ");
                 if(temp_text == NULL)
                 {
-                    printf("[s]WARNING: Invalid input!\n");
-                    continue;
+                        printf("[s]WARNING: Invalid input!\n");
+                        continue;
                 }
-                printf("target: %d, message: %s\n", target_client, temp_text);
+                printf("target: %d, message: %s\n", target_client_index, temp_text);
+                write(client_fds[target_client_index-1], "test", strlen("test")+1);
         }
 }
 
@@ -133,14 +138,16 @@ int main(int argc, char **argv)
 
                 for(i=0; i<MAX_CLIENT_CONNECT; i++)
                 {
-                    if(client_fds[i] == -1)
-                    {
-                        client_fds[i] = client_fd;
-                        pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
-                        break;
-                    }
+                        if(client_fds[i] == -1)
+                        {
+                           client_fds[i] = client_fd;
+                                pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
+                                break;
+                        }
+                        if(i==MAX_CLIENT_CONNET-1)
+                                printf("[s]Trying to accept too many clients. max client number: %d\n", MAX_CLIENT_CONNECT);
                 }
-                printf("[s]Trying to accept too many clients. max client number: %d", MAX_CLIENT_CONNECT);        
+                        
         }
         return 0;
 }

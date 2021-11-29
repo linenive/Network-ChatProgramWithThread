@@ -17,9 +17,16 @@
 void communicateWithServer(int client_fd)
 {
         char buff[BUFF_SIZE+5];
+        int byte_number;
         
-        read(client_fd, buff, BUFF_SIZE);
-        printf("[c_recv]%s\n", buff);
+        while(1){
+                memset(buff, 0, sizeof(buff));
+                byte_number = read(client_fd, buff, BUFF_SIZE);
+                if(byte_number!=0){
+                        printf("[c_recv]%s\n", buff);
+                }
+        }
+
         /*
         struct myinfo info;
         while(1){
