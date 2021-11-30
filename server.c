@@ -10,7 +10,7 @@
 #define MAX_CLIENT_CONNECT 5
 
 pthread_t pt[MAX_CLIENT_CONNECT];
-int client_fds[MAX_CLIENT_CONNECT];
+int client_fds[MAX_CLIENT_CONNECT+1];
 
         struct myinfo
         {
@@ -46,11 +46,19 @@ void *communicateWithClient(void *data)
         */
 }
 
+int isStringEqualToAll(char* text)
+{
+        //printf("%lu %lu\n", sizeof(text), sizeof("all")); // 8, 4
+        return sizeof(text)>=3 && text[0]=='a'
+                        && text[1]=='l' && text[2]=='l';
+}
+
 void *waitUserInput()
 {
         char input_text[BUFF_SIZE];
         char *temp_text;
         int target_client_index = -1;
+        int i;
 
         while(1)
         {
@@ -62,12 +70,13 @@ void *waitUserInput()
                         printf("[s]WARNING: Invalid input!\n");
                         continue;
                 }
-                target_client_index = temp_text[0] - '0';
-                if(target_client_index < 1)
+                if(isStringEqualToAll(temp_text))
                 {
-                        printf("[s]WARNING: Client index starts from 1, not 0.\n");
-                        continue;
+                        target_client_index = -2;
                 }
+                else{
+                        target_client_index = temp_text[0] - '0';
+                }                
                 temp_text = strtok(NULL, "\n");
                 if(temp_text == NULL)
                 {
@@ -75,7 +84,27 @@ void *waitUserInput()
                         continue;
                 }
                 printf("target: %d, message: %s\n", target_client_index, temp_text);
-                write(client_fds[target_client_index], temp_text, strlen(temp_text)+1);
+
+                if(target_client_index == -2){
+                        for(i=1; i<MAX_CLIENT_CONNECT+1; i++)
+                        {
+                                if(client_fds[i] != -1){
+                                        write(client_fds[i], temp_text, strlen(temp_text)+1);
+                                }
+                        }
+                }
+                else if(0<target_client_index && target_client_index <= MAX_CLIENT_CONNECT){
+                        if(client_fds[target_client_index] == -1){
+                                printf("[s]WARNING: There's no client connect! input index: %d\n",
+                                target_client_index);
+                        }
+                        write(client_fds[target_client_index], temp_text, strlen(temp_text)+1);
+                }
+                else{
+                       printf("[s]WARNING: Invalid client index. The range is: %d ~ %d.\n",
+                       1, MAX_CLIENT_CONNECT+1); 
+                }
+                
         }
 }
 
@@ -93,7 +122,7 @@ int main(int argc, char **argv)
 
         memset(&server_addr, 0x00, sizeof(server_addr));
         memset(&client_addr, 0x00, sizeof(client_addr));
-        for(i=0; i<MAX_CLIENT_CONNECT; i++)
+        for(i=1; i<MAX_CLIENT_CONNECT+1; i++)
         {
             client_fds[i] = -1;
         }
@@ -142,10 +171,10 @@ int main(int argc, char **argv)
                                 client_fds[i] = client_fd;
                                 pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
                                 printf("[s]Client %d is connected. fd: %d\n", i, client_fd);
-                                printf("입력: ")
+                                printf("입력: ");
                                 break;
                         }
-                        if(i==MAX_CLIENT_CONNET-1)
+                        if(i==MAX_CLIENT_CONNECT-1)
                                 printf("[s]Trying to accept too many clients. max client number: %d\n", MAX_CLIENT_CONNECT);
                 }
                         
