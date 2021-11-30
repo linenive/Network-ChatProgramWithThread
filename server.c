@@ -19,6 +19,22 @@ int client_fds[MAX_CLIENT_CONNECT+1];
                 int birthday;
         };
 
+int isStringEqualToAll(char* text)
+{
+        //printf("%lu %lu\n", sizeof(text), sizeof("all")); // 8, 4
+        return text[0]=='a' && text[1]=='l' && text[2]=='l';
+}
+
+int isStringEqualToBye(char* text)
+{
+        return  text[0]=='b' && text[1]=='y' && text[2]=='e';
+}
+
+int isStringEqualToExit(char* text)
+{
+        return text[0]=='e' && text[1]=='x' && text[2]=='i' && text[3]=='t';
+}
+
 void *communicateWithClient(void *data)
 {
         int client_index = *(int *)data;
@@ -30,26 +46,19 @@ void *communicateWithClient(void *data)
                 memset(buff, 0, sizeof(buff));
                 byte_number = read(client_fds[client_index], buff, BUFF_SIZE);
                 if(byte_number<=0) continue;
+                if(isStringEqualToExit(buff)) break;
                 printf("Client %d: %s\n", client_index, buff);
-                if(buff[0]=='b' && buff[1]=='y' && buff[2]=='e')
+                if(isStringEqualToBye(buff))
                 {
-                        printf("System: Close client %d.\n", client_index);
                         write(client_fds[client_index], "exit", strlen("exit")+1);
-                        continue;
+                        break;
                 }
         }
 
-        /*
+        printf("System: Close client %d.\n", client_index);
         close(client_fds[client_index]);
         client_fds[client_index] = -1;
         pthread_exit((void *) 0);
-        */
-}
-int isStringEqualToAll(char* text)
-{
-        //printf("%lu %lu\n", sizeof(text), sizeof("all")); // 8, 4
-        return strlen(text)==3 && text[0]=='a'
-                        && text[1]=='l' && text[2]=='l';
 }
 
 void *waitUserInput()
@@ -68,7 +77,7 @@ void *waitUserInput()
                         printf("WARNING: Invalid input!\n");
                         continue;
                 }
-                if(isStringEqualToAll(temp_text))
+                if(strlen(temp_text)==3 && isStringEqualToAll(temp_text))
                 {
                         target_client_index = -2;
                 }

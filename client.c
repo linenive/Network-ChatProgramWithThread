@@ -38,7 +38,11 @@ void communicateWithServer()
                 if(byte_number<=0) continue;
                 if(isStringEqualToExit(buff)) break;
                 printf("Server: %s\n", buff);
-                if(isStringEqualToBye(buff)) break;
+                if(isStringEqualToBye(buff)) 
+                {
+                        write(client_fd, "exit", strlen("exit")+1);
+                        break;
+                }
         }
 }
 
