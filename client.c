@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #define BUFF_SIZE 1024
+
+int client_fd;
 
         struct myinfo
         {
@@ -14,7 +17,18 @@
                 int birthday;
         };
 
-void communicateWithServer(int client_fd)
+int isStringEqualToBye(char* text)
+{
+        return strlen(text)==3 && text[0]=='b'
+                && text[1]=='y' && text[2]=='e';
+}
+
+int isStringEqualToExit(char* text)
+{
+        return text[0]=='e' && text[1]=='x' && text[2]=='i' && text[3]=='t';
+}
+
+void communicateWithServer()
 {
         char buff[BUFF_SIZE+5];
         int byte_number;
@@ -22,37 +36,37 @@ void communicateWithServer(int client_fd)
         while(1){
                 memset(buff, 0, sizeof(buff));
                 byte_number = read(client_fd, buff, BUFF_SIZE);
-                if(byte_number>0){
-                        printf("[c_recv]%s\n", buff);
+                if(byte_number<=0) continue;
+                if(isStringEqualToExit(buff)) break;
+                printf("Server: %s\n", buff);
+                
+        }
+}
+
+void *waitUserInput()
+{
+        char input_text[BUFF_SIZE];
+        char* text;
+
+        while(1)
+        {
+                fgets(input_text, BUFF_SIZE, stdin);
+                text = strtok(input_text, "\n");
+                write(client_fd, text, strlen(text)+1);
+
+                if(isStringEqualToBye(text))
+                {
+                        return NULL;
                 }
-        }
-
-        /*
-        struct myinfo info;
-        while(1){
-                write(client_fd, argv[1], strlen(argv[1])+1);
-                read(client_fd, buff, BUFF_SIZE);
-                printf("[c_recv]%s\n", buff);
-
-                memset(&info, 0, sizeof(info));
-                strcpy(info.name, "Janjani");
-                info.age = htons(1);
-                info.birthday = htonl(305419896);
-                write(client_fd, (struct myinfo*)&info, sizeof(info));
-        }
-        */
-        
-        close(client_fd);
+        }        
 }
 
 int main(int argc)
 {
-        int client_fd;
         struct sockaddr_in server_addr;
         
+        pthread_t input_pt;
 
-        // int domain, int type, int protocol
-        // return socket descriptor
         client_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if(-1 == client_fd)
         {
@@ -71,9 +85,13 @@ int main(int argc)
                 exit(1);
         }
 
-        communicateWithServer(client_fd);
+        pthread_create(&input_pt, NULL, waitUserInput, NULL);
+
+        communicateWithServer();
+
+        pthread_join(input_pt, NULL);
+        close(client_fd);
+        printf("Exit the program.\n");
 
         return 0;
 }
-~                                                                               
-~                    
