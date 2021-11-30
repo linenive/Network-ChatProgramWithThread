@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #define BUFF_SIZE 1024
-#define MAX_CLIENT_CONNET 5
+#define MAX_CLIENT_CONNECT 5
 
 pthread_t pt[MAX_CLIENT_CONNECT];
 int client_fds[MAX_CLIENT_CONNECT];
@@ -40,10 +40,10 @@ void *communicateWithClient(void *data)
                 printf("[s_recv]receive name: %s, age: %d, birthday: %d\n", info.name, ntohs(info.age), ntohl(info.birthday));
                 
         }
-        */
         close(client_fds[client_index]);
         client_fds[client_index] = -1;
         pthread_exit((void *) 0);
+        */
 }
 
 void *waitUserInput()
@@ -56,7 +56,6 @@ void *waitUserInput()
         {
                 printf("입력: ");
                 fgets(input_text, BUFF_SIZE, stdin);
-                printf("%s\n", input_text);
                 temp_text = strtok(input_text, " ");
                 if(temp_text == NULL)
                 {
@@ -69,14 +68,14 @@ void *waitUserInput()
                         printf("[s]WARNING: Client index starts from 1, not 0.\n");
                         continue;
                 }
-                temp_text = strtok(NULL, " ");
+                temp_text = strtok(NULL, "\n");
                 if(temp_text == NULL)
                 {
                         printf("[s]WARNING: Invalid input!\n");
                         continue;
                 }
                 printf("target: %d, message: %s\n", target_client_index, temp_text);
-                write(client_fds[target_client_index-1], "test", strlen("test")+1);
+                write(client_fds[target_client_index], temp_text, strlen(temp_text)+1);
         }
 }
 
@@ -136,12 +135,14 @@ int main(int argc, char **argv)
                         exit(1);
                 }
 
-                for(i=0; i<MAX_CLIENT_CONNECT; i++)
+                for(i=1; i<MAX_CLIENT_CONNECT+1; i++)
                 {
                         if(client_fds[i] == -1)
                         {
-                           client_fds[i] = client_fd;
+                                client_fds[i] = client_fd;
                                 pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
+                                printf("[s]Client %d is connected. fd: %d\n", i, client_fd);
+                                printf("입력: ")
                                 break;
                         }
                         if(i==MAX_CLIENT_CONNET-1)

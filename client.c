@@ -22,7 +22,7 @@ void communicateWithServer(int client_fd)
         while(1){
                 memset(buff, 0, sizeof(buff));
                 byte_number = read(client_fd, buff, BUFF_SIZE);
-                if(byte_number!=0){
+                if(byte_number>0){
                         printf("[c_recv]%s\n", buff);
                 }
         }
