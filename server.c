@@ -49,7 +49,7 @@ void *communicateWithClient(void *data)
 int isStringEqualToAll(char* text)
 {
         //printf("%lu %lu\n", sizeof(text), sizeof("all")); // 8, 4
-        return sizeof(text)>=3 && text[0]=='a'
+        return strlen(text)==3 && text[0]=='a'
                         && text[1]=='l' && text[2]=='l';
 }
 
