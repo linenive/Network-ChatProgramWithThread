@@ -96,7 +96,7 @@ int main(int argc)
                 printf("Error: The server is congested. Please try again later.\n");
                 exit(1);
         }else{
-                printf("System: Successfully connected.\n");
+                printf("System: Successfully connected. ID: %s\n", buff);
         }
 
         pthread_create(&input_pt, NULL, waitUserInput, NULL);

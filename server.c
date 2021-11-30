@@ -117,6 +117,7 @@ void *waitUserInput()
 
 int main(int argc, char **argv)
 {
+        char temp_text[BUFF_SIZE];
         int server_fd = 0;
         int client_fd = 0;
         int client_addr_size = 0;
@@ -178,7 +179,8 @@ int main(int argc, char **argv)
                                 client_fds[i] = client_fd;
                                 pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
                                 printf("System: Client %d is connected. fd: %d\n", i, client_fd);
-                                write(client_fd, "connected", strlen("connected")+1);
+                                sprint(temp_text, "%d", i);
+                                write(client_fd, temp_text, strlen(temp_text)+1);
                                 break;
                         }
                         if(i==MAX_CLIENT_CONNECT){
