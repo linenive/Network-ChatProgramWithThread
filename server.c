@@ -178,10 +178,12 @@ int main(int argc, char **argv)
                                 client_fds[i] = client_fd;
                                 pthread_create(&pt[i], NULL, communicateWithClient, (void *)&i);
                                 printf("System: Client %d is connected. fd: %d\n", i, client_fd);
+                                write(client_fd, "connected", strlen("connected")+1);
                                 break;
                         }
                         if(i==MAX_CLIENT_CONNECT){
                                 printf("Error: Trying to accept too many clients. ");
+                                write(client_fd, "exit", strlen("exit")+1);
                                 printf("max client number: %d\n", MAX_CLIENT_CONNECT);
                         }
                 }

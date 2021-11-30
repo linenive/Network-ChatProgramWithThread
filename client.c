@@ -67,13 +67,15 @@ void *waitUserInput()
 int main(int argc)
 {
         struct sockaddr_in server_addr;
+        char buff[BUFF_SIZE+5];
+        int byte_number;
         
         pthread_t input_pt;
 
         client_fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if(-1 == client_fd)
         {
-                printf("socket 생성 실패\n");
+                printf("Error: Fail to create socket\n");
                 exit(1);
         }
 
@@ -84,8 +86,17 @@ int main(int argc)
 
         if(-1 == connect(client_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)))
         {
-                printf( "접속 실패\n");
+                printf( "Error: Fail to connect to server.\n");
                 exit(1);
+        }
+
+        memset(buff, 0, sizeof(buff));
+        byte_number = read(client_fd, buff, BUFF_SIZE);
+        if(byte_number>0 && isStringEqualToExit(buff)){
+                printf("Error: The server is congested. Please try again later.\n");
+                exit(1);
+        }else{
+                printf("System: Successfully connected.\n");
         }
 
         pthread_create(&input_pt, NULL, waitUserInput, NULL);
