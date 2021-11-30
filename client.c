@@ -19,8 +19,7 @@ int client_fd;
 
 int isStringEqualToBye(char* text)
 {
-        return strlen(text)==3 && text[0]=='b'
-                && text[1]=='y' && text[2]=='e';
+        return  text[0]=='b' && text[1]=='y' && text[2]=='e';
 }
 
 int isStringEqualToExit(char* text)
@@ -39,7 +38,7 @@ void communicateWithServer()
                 if(byte_number<=0) continue;
                 if(isStringEqualToExit(buff)) break;
                 printf("Server: %s\n", buff);
-                
+                if(isStringEqualToBye(buff)) break;
         }
 }
 
@@ -54,7 +53,7 @@ void *waitUserInput()
                 text = strtok(input_text, "\n");
                 write(client_fd, text, strlen(text)+1);
 
-                if(isStringEqualToBye(text))
+                if(strlen(text)==3 && isStringEqualToBye(text))
                 {
                         return NULL;
                 }
@@ -89,7 +88,7 @@ int main(int argc)
 
         communicateWithServer();
 
-        pthread_join(input_pt, NULL);
+        pthread_cancel(input_pt);
         close(client_fd);
         printf("Exit the program.\n");
 

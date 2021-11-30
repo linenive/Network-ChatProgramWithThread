@@ -33,7 +33,7 @@ void *communicateWithClient(void *data)
                 printf("Client %d: %s\n", client_index, buff);
                 if(buff[0]=='b' && buff[1]=='y' && buff[2]=='e')
                 {
-                        printf("Close client %d.\n", client_index);
+                        printf("System: Close client %d.\n", client_index);
                         write(client_fds[client_index], "exit", strlen("exit")+1);
                         continue;
                 }
@@ -171,11 +171,12 @@ int main(int argc, char **argv)
                                 printf("System: Client %d is connected. fd: %d\n", i, client_fd);
                                 break;
                         }
-                        if(i==MAX_CLIENT_CONNECT-1){
+                        if(i==MAX_CLIENT_CONNECT){
                                 printf("Error: Trying to accept too many clients. ");
                                 printf("max client number: %d\n", MAX_CLIENT_CONNECT);
                         }
                 }
         }
+
         return 0;
 }
